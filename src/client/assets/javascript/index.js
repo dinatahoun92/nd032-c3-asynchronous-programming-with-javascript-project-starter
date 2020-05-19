@@ -29,22 +29,20 @@ function updateStore(updates, cb) {
 async function onPageLoad() {
   const page = window.location.href.split("/").pop();
 
-  // if (page === "race") {
-  //   return;
-  // }
+  if (page === "race") {
+    getTracks().then((tracks) => {
+      console.log(tracks);
+      const html = renderTrackCards(tracks);
+      renderAt("#tracks", html);
+      console.log(tracks);
+    });
 
-  getTracks().then((tracks) => {
-    console.log(tracks);
-    const html = renderTrackCards(tracks);
-    renderAt("#tracks", html);
-    console.log(tracks);
-  });
-
-  getRacers().then((racers) => {
-    console.log(racers);
-    const html = renderRacerCars(racers);
-    renderAt("#racers", html);
-  });
+    getRacers().then((racers) => {
+      console.log(racers);
+      const html = renderRacerCars(racers);
+      renderAt("#racers", html);
+    });
+  }
 }
 
 function setupClickHandlers() {
@@ -240,7 +238,7 @@ function renderCountdown(count) {
 function renderRaceStartView(track, racers) {
   return `
 		  <header>
-			  <h1>Race: ${track.name}</h1>
+			  <h1>Race: ${track ? track.name : ""}</h1>
 		  </header>
 		  <main id="two-columns">
 			  <section id="leaderBoard">
