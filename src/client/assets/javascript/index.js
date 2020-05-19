@@ -29,16 +29,19 @@ function updateStore(updates, cb) {
 async function onPageLoad() {
   const page = window.location.href.split("/").pop();
 
-  if (page === "race") {
-    return;
-  }
+  // if (page === "race") {
+  //   return;
+  // }
 
   getTracks().then((tracks) => {
+    console.log(tracks);
     const html = renderTrackCards(tracks);
     renderAt("#tracks", html);
+    console.log(tracks);
   });
 
   getRacers().then((racers) => {
+    console.log(racers);
     const html = renderRacerCars(racers);
     renderAt("#racers", html);
   });
@@ -179,7 +182,7 @@ function renderRacerCars(racers) {
 		  `;
   }
 
-  const results = racers.map(renderRacerCars).join("");
+  const results = racers.map(renderRacerCard).join("");
 
   return `
 		  <ul id="racers">
@@ -296,15 +299,16 @@ function raceProgress(positions) {
 
 function renderAt(element, html) {
   let node = null;
-
-  if (element.match(/^\./).length) {
-    node = document.getElementsByClassName(element);
+  if (element.match(/^\./) != null) {
+    node = document.getElementsByClassName(element.substring(1));
   }
 
-  if (element.match(/^#/).length) {
-    node = document.getElementById(element);
+  node = document.getElementById(element);
+  if (element.match(/^\#/) != null) {
+    if (element.match(/^\#/) != null) {
+      node = document.getElementById(element.substring(1));
+    }
   }
-
   node.innerHTML = html;
 }
 
@@ -328,17 +332,23 @@ function defaultFetchOpts() {
 
 function getTracks() {
   // GET request to `${SERVER}/api/tracks`
-  fetch(`${SERVER}/api/tracks`)
-    .then((response) => response.json())
-    .then((data) => console.log(data));
+  // fetch(`${SERVER}/api/tracks`)
+  //   .then((response) => response.json())
+  //   .then((data) => console.log(data));
+  return fetch(`${SERVER}/api/tracks`, {
+    ...defaultFetchOpts(),
+    method: "Get",
+    mode: "cors",
+  }).then((res) => res.json());
 }
 function getRacers() {
   // GET request to `${SERVER}/api/cars`
-  fetch(`${SERVER}/api/cars`)
-    .then((response) => response.json())
-    .then((data) => console.log(data));
+  return fetch(`${SERVER}/api/cars`, {
+    ...defaultFetchOpts(),
+    method: "GET",
+    mode: "cors",
+  }).then((res) => res.json());
 }
-getTracks();
 
 function createRace(player_id, track_id) {
   const body = { player_id, track_id };
@@ -353,9 +363,11 @@ function createRace(player_id, track_id) {
 
 function getRace(id) {
   // GET request to `${SERVER}/api/races/${id}`
-  fetch(`${SERVER}/api/races/${id}`)
-    .then((response) => response.json())
-    .then((data) => console.log(data));
+  return fetch(`${SERVER}/api/races/${id}`, {
+    ...defaultFetchOpts(),
+    method: "GET",
+    mode: "cors",
+  }).then((res) => res.json());
 }
 
 function startRace(id) {
