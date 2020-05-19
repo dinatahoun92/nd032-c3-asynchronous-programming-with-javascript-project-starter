@@ -96,7 +96,7 @@ async function race() {
 
   // The race has been created, now start the countdown
   // TODO - call the async function runCountdown
-
+  runCountdown();
   // TODO - call the async function startRace
 
   // TODO - call the async function runRace
@@ -104,14 +104,21 @@ async function race() {
 
 async function runCountdown() {
   // wait for the DOM to load
-  await delay(1000);
-  let timer = 3;
+  await onPageLoad();
+  let counter = 3;
 
   return new Promise((resolve) => {
     // TODO - use Javascript's built in setInterval method to count down once per second
-
+    console.log(timer);
+    var timer = setInterval(() => {
+      if (counter === 0) {
+        clearInterval(timer);
+      } else {
+        counter--;
+        document.getElementById("big-numbers").innerHTML = counter;
+      }
+    }, 1000);
     // run this DOM manipulation to decrement the countdown for the user
-    document.getElementById("big-numbers").innerHTML = --timer;
 
     // TODO - if the countdown is done, clear the interval, resolve the promise, and return
   });
@@ -230,7 +237,7 @@ function renderTrackCard(track) {
 
 function renderCountdown(count) {
   return `
-		  h2>Race Starts In...</h2>
+		  <h2>Race Starts In...</h2>
 		  <p id="big-numbers">${count}</p>
 	  `;
 }
