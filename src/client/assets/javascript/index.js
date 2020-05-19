@@ -90,15 +90,17 @@ async function race() {
 
   // TODO - Get player_id and track_id from the store
 
-  //const race = // TODO - invoke the API call to create the race, then save the result
+  const race = createRace(store.player_id, store.track_id)
+    .then(() => runCountdown())
+    .then(() => startRace(store.track_id))
+    .then(() => runRace(store.track_id));
 
+  // TODO - invoke the API call to create the race, then save the result
   // TODO - update the store with the race id
-
   // The race has been created, now start the countdown
   // TODO - call the async function runCountdown
-  runCountdown();
-  // TODO - call the async function startRace
 
+  // TODO - call the async function startRace
   // TODO - call the async function runRace
 }
 
@@ -109,7 +111,6 @@ async function runCountdown() {
 
   return new Promise((resolve) => {
     // TODO - use Javascript's built in setInterval method to count down once per second
-    console.log(timer);
     var timer = setInterval(() => {
       if (counter === 0) {
         clearInterval(timer);
@@ -357,13 +358,19 @@ function getRacers() {
 
 function createRace(player_id, track_id) {
   const body = { player_id, track_id };
-
   return fetch(`${SERVER}/api/races`, {
     ...defaultFetchOpts(),
     method: "POST",
     dataType: "jsonp",
     body: JSON.stringify(body),
-  }).then((res) => res.json());
+  })
+    .then((res) => {
+      return res.json();
+    })
+    .then((res) => {
+      updateStore((store.race_id = res.ID));
+      console.log(store.race_id);
+    });
 }
 
 function getRace(id) {
@@ -378,7 +385,7 @@ function getRace(id) {
 function startRace(id) {
   return fetch(`${SERVER}/api/races/${id}/start`, {
     ...defaultFetchOpts(),
-    method: "GET",
+    method: "POST",
     mode: "cors",
   });
 }
