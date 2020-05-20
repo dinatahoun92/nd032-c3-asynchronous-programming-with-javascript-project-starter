@@ -92,8 +92,8 @@ async function race() {
 
   await createRace(store.player_id, store.track_id);
   await runCountdown();
-  await runRace(store.race_id);
-  await startRace(store.race_id);
+  await startRace(store.race_id - 1);
+  await runRace(store.race_id - 1);
 
   // TODO - invoke the API call to create the race, then save the result
   // TODO - update the store with the race id
@@ -128,7 +128,7 @@ async function runRace(raceID) {
 
   return new Promise((resolve) => {
     const counter = setInterval(async () => {
-      await fetch(`${SERVER}/api/races/${raceID - 1}`, {
+      await fetch(`${SERVER}/api/races/${raceID}`, {
         method: "GET",
         mode: "cors",
       })
@@ -141,7 +141,7 @@ async function runRace(raceID) {
           if (res.status === "finished") {
             clearInterval(counter);
             renderAt("#race", resultsView(res.positions));
-            resolve(raceInfo);
+            resolve();
           }
         });
     }, 500);
@@ -195,7 +195,7 @@ function handleSelectTrack(target) {
 function handleAccelerate() {
   console.log("accelerate button clicked");
   // TODO - Invoke the API call to accelerate
-  accelerate(store.race_id);
+  accelerate(store.race_id - 1);
 }
 
 // HTML VIEWS ------------------------------------------------
@@ -299,13 +299,14 @@ function resultsView(positions) {
 
 function raceProgress(positions) {
   let userPlayer = positions.find((e) => e.id === store.player_id);
-  userPlayer.driver_name += " (you)";
-
+  if (userPlayer) {
+    userPlayer.driver_name += " (you)";
+  }
   const results = positions.map((p) => {
     return `
 			  <tr>
 				  <td>
-					  <h3>${p.final_position} - ${p.driver_name}</h3>
+					  <h3>${p.final_position ? p.final_position : "not yet"} - ${p.driver_name}</h3>
 				  </td>
 			  </tr>
 		  `;
