@@ -93,7 +93,7 @@ async function race() {
   const race = createRace(store.player_id, store.track_id)
     .then(() => runCountdown())
     .then(() => startRace(store.track_id))
-    .then(() => runRace(store.track_id));
+    .then(() => runRace(store.race_id));
 
   // TODO - invoke the API call to create the race, then save the result
   // TODO - update the store with the race id
@@ -126,20 +126,21 @@ async function runCountdown() {
 }
 
 async function runRace(raceID) {
+  console.log(raceID);
   return new Promise((resolve) => {
     // TODO - use Javascript's built in setInterval method to get race info twice a second
     /* 
 		  TODO - if the race info status property is "in-progress", update the leaderboard by calling:
   
-		  renderAt('#leaderBoard', raceProgress(res.positions))
+		  
 	  */
+    renderAt("#leaderBoard", raceProgress(res.positions));
     /* 
 		  TODO - if the race info status property is "finished", run the following:
-  
-		  clearInterval(raceInterval) // to stop the interval from repeating
-		  renderAt('#race', resultsView(res.positions)) // to render the results view
-		  reslove(res) // resolve the promise
 	  */
+    clearInterval(raceInterval); // to stop the interval from repeating
+    renderAt("#race", resultsView(res.positions)); // to render the results view
+    reslove(res); // resolve the promise
   });
 }
 
@@ -154,7 +155,7 @@ function handleSelectPodRacer(target) {
 
   // add class selected to current target
   target.classList.add("selected");
-
+  updateStore((track_id = target.id));
   // TODO - save the selected track to the store
 }
 
@@ -171,11 +172,13 @@ function handleSelectTrack(target) {
   target.classList.add("selected");
 
   // TODO - save the selected track id to the store
+  updateStore((track_id = target.id));
 }
 
 function handleAccelerate() {
   console.log("accelerate button clicked");
   // TODO - Invoke the API call to accelerate
+  accelerate(store.race_id);
 }
 
 // HTML VIEWS ------------------------------------------------
@@ -311,11 +314,11 @@ function renderAt(element, html) {
 
   node = document.getElementById(element);
   if (element.match(/^\#/) != null) {
-    if (element.match(/^\#/) != null) {
-      node = document.getElementById(element.substring(1));
-    }
+    node = document.getElementById(element.substring(1));
   }
-  node.innerHTML = html;
+  if (node) {
+    node.innerHTML = html;
+  }
 }
 
 // ^ Provided code ^ do not remove
@@ -379,7 +382,9 @@ function getRace(id) {
     ...defaultFetchOpts(),
     method: "GET",
     mode: "cors",
-  }).then((res) => res.json());
+  })
+    .then((res) => res.json())
+    .then((res) => console.log(res));
 }
 
 function startRace(id) {
@@ -397,6 +402,5 @@ function accelerate(id) {
   return fetch(`${SERVER}/api/races/${id}/accelerate`, {
     ...defaultFetchOpts(),
     method: "POST",
-    dataType: "jsonp",
-  }).then((res) => res.json());
+  });
 }
