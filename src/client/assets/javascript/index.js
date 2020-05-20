@@ -90,10 +90,10 @@ async function race() {
 
   // TODO - Get player_id and track_id from the store
 
-  const race = createRace(store.player_id, store.track_id)
-    .then(() => runCountdown())
-    .then(() => startRace(store.track_id))
-    .then(() => runRace(store.race_id));
+  await createRace(store.player_id, store.track_id);
+  await runCountdown();
+  await runRace(store.race_id);
+  await startRace(store.race_id);
 
   // TODO - invoke the API call to create the race, then save the result
   // TODO - update the store with the race id
@@ -103,20 +103,18 @@ async function race() {
   // TODO - call the async function startRace
   // TODO - call the async function runRace
 }
-
 async function runCountdown() {
-  // wait for the DOM to load
+  //   // wait for the DOM to load
   await onPageLoad();
-  let counter = 3;
 
+  var timer = 3;
+  // TODO - use Javascript's built in setInterval method to count down once per second
   return new Promise((resolve) => {
-    // TODO - use Javascript's built in setInterval method to count down once per second
-    var timer = setInterval(() => {
-      if (counter === 0) {
-        clearInterval(timer);
-      } else {
-        counter--;
-        document.getElementById("big-numbers").innerHTML = counter;
+    const countdown = setInterval(() => {
+      document.getElementById("big-numbers").innerHTML = --timer;
+      if (timer <= 0) {
+        clearInterval(countdown);
+        resolve();
       }
     }, 1000);
     // run this DOM manipulation to decrement the countdown for the user
@@ -127,21 +125,40 @@ async function runCountdown() {
 
 async function runRace(raceID) {
   console.log(raceID);
+
   return new Promise((resolve) => {
-    // TODO - use Javascript's built in setInterval method to get race info twice a second
-    /* 
-		  TODO - if the race info status property is "in-progress", update the leaderboard by calling:
-  
-		  
-	  */
-    renderAt("#leaderBoard", raceProgress(res.positions));
-    /* 
-		  TODO - if the race info status property is "finished", run the following:
-	  */
-    clearInterval(raceInterval); // to stop the interval from repeating
-    renderAt("#race", resultsView(res.positions)); // to render the results view
-    reslove(res); // resolve the promise
+    const counter = setInterval(async () => {
+      await fetch(`${SERVER}/api/races/${raceID - 1}`, {
+        method: "GET",
+        mode: "cors",
+      })
+        .then((res) => res.json())
+        .then((res) => {
+          console.log(res);
+          if (res.status === "in-progress") {
+            renderAt("#leaderBoard", raceProgress(res.positions));
+          }
+          if (res.status === "finished") {
+            clearInterval(counter);
+            renderAt("#race", resultsView(res.positions));
+            resolve(raceInfo);
+          }
+        });
+    }, 500);
   });
+  // TODO - use Javascript's built in setInterval method to get race info twice a second
+
+  /* 
+		TODO - if the race info status property is "in-progress", update the leaderboard by calling:
+		renderAt('#leaderBoard', raceProgress(res.positions))
+	*/
+
+  /* 
+		TODO - if the race info status property is "finished", run the following:
+		clearInterval(raceInterval) // to stop the interval from repeating
+		renderAt('#race', resultsView(res.positions)) // to render the results view
+		reslove(res) // resolve the promise
+	*/
 }
 
 function handleSelectPodRacer(target) {
@@ -374,17 +391,6 @@ function createRace(player_id, track_id) {
       updateStore((store.race_id = res.ID));
       console.log(store.race_id);
     });
-}
-
-function getRace(id) {
-  // GET request to `${SERVER}/api/races/${id}`
-  return fetch(`${SERVER}/api/races/${id}`, {
-    ...defaultFetchOpts(),
-    method: "GET",
-    mode: "cors",
-  })
-    .then((res) => res.json())
-    .then((res) => console.log(res));
 }
 
 function startRace(id) {
